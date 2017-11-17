@@ -1,26 +1,29 @@
 from collections import defaultdict
-import csv
+import numpy as np
+import pandas
 import os
 
 
 def read_data(path):
-	input_data = []
-	output_data = []
-	category_index_input = defaultdict(str)
-	category_index_output = defaultdict(str)
+	input_data = np.array([])
+	output_data = np.array([])
+	category_index_input = dict()
+	category_index_output = dict()
 	for file in os.listdir(path):
 		if file.endswith('.csv'):
 			file_path = path + file
-			with open(file_path, 'r') as csvfile:
-				reader = csv.reader(csvfile, delimiter=',')
-				# Skip category names
-				row1 = next(reader)
-				for row in reader:
-					output_data.append(row[0:3])
-					input_data.append(row[3:])
+			dataframe = pandas.read_csv(file_path)
+			dataset = dataframe.values
+			if not output_data.any():
+				output_data = dataset[:,0:3]
+				input_data = dataset[:,3:]
+			else:
+				output_data = np.append(output_data, dataset[:,0:3], axis=0)
+				input_data = np.append(input_data, dataset[:,3:], axis=0)
 	# Set category indices
-	input_categories = row1[0:3]
-	output_categories = row1[3:]
+	data_types = dataframe.columns
+	input_categories = data_types[3:]
+	output_categories = data_types[0:3]
 	for i, category in enumerate(input_categories):
 		category_index_input[category] = i
 	for i,category in enumerate(output_categories):
