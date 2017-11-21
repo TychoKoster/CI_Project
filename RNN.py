@@ -1,7 +1,7 @@
 import read_data as rd
 import numpy as np
 import matplotlib.pyplot as plt
-import timeit
+import timeito
 import math
 	
 from keras.models import Model, Sequential, load_model
