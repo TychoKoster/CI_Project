@@ -13,6 +13,9 @@ def read_data(path):
 		if file.endswith('.csv'):
 			file_path = path + file
 			dataframe = pandas.read_csv(file_path)
+			# Normalize?
+			# scaler = MinMaxScaler(feature_range=(0, 1))
+			# dataset = scaler.fit_transform(dataset)
 			dataset = dataframe.values
 			if not output_data.any():
 				output_data = dataset[:,0:3]

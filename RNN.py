@@ -1,14 +1,14 @@
 import read_data as rd
 import numpy as np
+import matplotlib.pyplot as plt
 import timeit
-
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.wrappers.scikit_learn import KerasRegressor
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import KFold
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
+import math
+	
+from keras.models import Model, Sequential, load_model
+from keras.layers import Input, Embedding, LSTM, Dense, concatenate
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import normalize
 
 def wrapper(func, *args, **kwargs):
 	def wrapped():
@@ -16,34 +16,37 @@ def wrapper(func, *args, **kwargs):
 	return wrapped
 
 
-def baseline_model():
-	# create model
-	model = Sequential()
-	model.add(Dense(22, input_dim=22, kernel_initializer='normal', activation='relu'))
-	model.add(Dense(3, kernel_initializer='normal'))
-	# Compile model
-	model.compile(loss='mean_squared_error', optimizer='adam')
-	return model
+def LSTM_network(x, y, x_test, y_test):
+	input_layer = Input(shape=(22,))
+	embedded_layer = Embedding(22, 3)(input_layer)
 
-
-def test_keras(input_data, output_data):
-	# evaluate model with standardized dataset
-	# fix random seed for reproducibility
-	seed = 7
-	np.random.seed(seed)
-	# evaluate model with standardized dataset
-	estimator = KerasRegressor(build_fn=baseline_model, nb_epoch=100, batch_size=5, verbose=0)
-	kfold = KFold(n_splits=10, random_state=seed)
-	results = cross_val_score(estimator, input_data, output_data, cv=kfold)
+	lstm_layer = LSTM(3)(embedded_layer)
 	
-	print("Results: %.2f (%.2f) MSE" % (results.mean(), results.std()))
+	# Output layers
+	acceleration = Dense(1, activation='sigmoid')(lstm_layer)
+	brake = Dense(1, activation='sigmoid')(lstm_layer)
+	steering = Dense(1, activation='tanh')(lstm_layer)
+
+	output_layer = concatenate([acceleration, brake, steering])
+
+	# Compile model
+	model = Model(inputs=input_layer, outputs=output_layer)
+
+	model.compile(loss='mean_squared_error', optimizer='adam')
+	model.fit(x, y, epochs=1, batch_size=1, verbose=1, validation_data=(x_test, y_test))
+	model.save('lstm.h5')	
+	
+	return model
 
 
 def main():
 	path = '/home/jterstall/Documents/CI/CI_Project/train_data/'
 	category_index_input, category_index_output, input_data, output_data = rd.read_data(path)
-	wrapped = wrapper(test_keras, input_data, output_data)
-	print(timeit.timeit(wrapped, number=1))
+	x, x_test, y, y_test = train_test_split(input_data, output_data, test_size=0.2)
+	x = normalize(x)
+	y = normalize(y)
+	# model = LSTM_network(x, y, x_test, y_test)
+	model = load_model('lstm.h5')
 
 if __name__ == '__main__':
 	main()
