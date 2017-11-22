@@ -2,15 +2,14 @@ import read_data as rd
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import os
 	
 from keras.models import Model, Sequential, load_model
 from keras.layers import Input, Embedding, LSTM, Dense, concatenate
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import normalize, scale, MinMaxScaler
+from sklearn.preprocessing import scale
 
 
-def LSTM_network(x, y, x_test, y_test):
+def LSTM_network(path, x, y):
 	x = np.reshape(x, (x.shape[0], 22, 1))
 	input_layer = Input(shape=(22,1))
 
@@ -30,32 +29,35 @@ def LSTM_network(x, y, x_test, y_test):
 	model = Model(inputs=input_layer, outputs=output_layer)
 
 	model.compile(loss='mean_squared_error', optimizer='adam')
-	model.fit(x, y, epochs=10, batch_size=32, verbose=1)
-	model.fit(x, y, epochs=10, batch_size=32, verbose=1, validation=(x_test, y_test))
-	model.save('/home/jterstall/Documents/CI/CI_Project/torcs-server/torcs-client/lstm.h5')	
+	model.fit(x, y, epochs=10, batch_size=32, verbose=1, validation_split=0.1)
+	print(path)
+	model.save(path)	
 	
 	return model
 
-def LSTM_network2(x, y, x_test, y_test):
+def LSTM_network2(path, x, y):
 	x = np.reshape(x, (x.shape[0], 22, 1))
 	model = Sequential()
 	model.add(LSTM(22, input_shape=(22,1)))
 	model.add(Dense(15, activation='relu'))
 	model.add(Dense(3))
 	model.compile(loss='mean_squared_error', optimizer='adam')
-	model.fit(x, y, epochs=5, batch_size=32, verbose=1)
-	# model.fit(x, y, epochs=5, batch_size=32, verbose=1, validation=(x_test,y_test))
-	model.save('/home/jterstall/Documents/CI/CI_Project/torcs-server/torcs-client/lstm.h5')	
+	model.fit(x, y, epochs=5, batch_size=32, verbose=1, validation_split=0.1)
+	model.save(path)	
 	return model
 
 def main():
-	path = '/home/jterstall/Documents/CI/CI_Project/train_data/'
-	category_index_input, category_index_output, input_data, output_data = rd.read_data(path)
-	input_data, test_input, output_data, test_output = train_test_split(input_data, output_data, test_size=0.1)
+	path = os.getcwd()
+	data_path = os.path.join(path, 'train_data/')
+	model_path = os.path.join(path, 'torcs-server/torcs-client/lstm.h5')
+
+	category_index_input, category_index_output, input_data, output_data = rd.read_data(data_path)
 	input_data = scale(input_data)
 	output_data = scale(output_data)
-	model = LSTM_network(input_data, output_data, test_input, test_output)
-	# model = LSTM_network2(input_data, output_data, test_input, test_output)
+	# input_data, test_input, output_data, test_output = train_test_split(input_data, output_data, test_size=0.1)
+
+	model = LSTM_network(model_path, input_data, output_data)
+	# model = LSTM_network2(path, input_data, output_data)
 
 if __name__ == '__main__':
 	main()
