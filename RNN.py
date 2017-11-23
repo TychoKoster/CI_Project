@@ -6,7 +6,8 @@ import os
 	
 from keras.models import Model, Sequential, load_model
 from keras.layers import Input, Embedding, LSTM, Dense, concatenate
-from sklearn.preprocessing import scale
+from sklearn.preprocessing import scale, StandardScaler
+from sklearn.externals import joblib
 
 
 def LSTM_network(path, x, y):
@@ -29,8 +30,8 @@ def LSTM_network(path, x, y):
 	model = Model(inputs=input_layer, outputs=output_layer)
 
 	model.compile(loss='mean_squared_error', optimizer='adam')
-	model.fit(x, y, epochs=10, batch_size=32, verbose=1, validation_split=0.1)
-	print(path)
+	model.fit(x, y, epochs=1, batch_size=32, verbose=1, validation_split=0.1)
+
 	model.save(path)	
 	
 	return model
@@ -50,14 +51,15 @@ def main():
 	path = os.getcwd()
 	data_path = os.path.join(path, 'train_data/')
 	model_path = os.path.join(path, 'torcs-server/torcs-client/lstm.h5')
-
+	scaler_path = os.path.join(path, 'torcs-server/torcs-client/scaler.pkl')
 	category_index_input, category_index_output, input_data, output_data = rd.read_data(data_path)
-	input_data = scale(input_data)
-	output_data = scale(output_data)
-	# input_data, test_input, output_data, test_output = train_test_split(input_data, output_data, test_size=0.1)
+	scaler = StandardScaler()
+	scaler.fit(input_data)
+	input_data = scaler.transform(input_data)
+	joblib.dump(scaler, scaler_path)
 
 	model = LSTM_network(model_path, input_data, output_data)
-	# model = LSTM_network2(path, input_data, output_data)
+	# model = LSTM_network2(model_path, input_data, output_data)
 
 if __name__ == '__main__':
 	main()
