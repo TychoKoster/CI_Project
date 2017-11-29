@@ -5,24 +5,27 @@ import math
 import os
 	
 from keras.models import Model, Sequential, load_model
-from keras.layers import Input, Embedding, LSTM, Dense, concatenate
+from keras.layers import Input, SimpleRNN, Embedding, LSTM, Dense, concatenate, Activation, Flatten
+from keras.optimizers import TFOptimizer
 from sklearn.preprocessing import scale, StandardScaler
+from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib
 
 
 def LSTM_network(path, x, y):
 	x = np.reshape(x, (x.shape[0], 22, 1))
+	X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+	
 	input_layer = Input(shape=(22,1))
 
-	hidden = Dense(15, input_shape=(22,1), activation='relu')(input_layer)
-	hidden = LSTM(15, return_sequences=True)(hidden)
+	hidden = LSTM(22, input_shape=(22,1))(input_layer)
 
-	lstm_layer = LSTM(3)(hidden)
+	hidden = Dense(90, activation='relu')(hidden)
 	
 	# Output layers
-	acceleration = Dense(1, activation='sigmoid')(lstm_layer)
-	brake = Dense(1, activation='sigmoid')(lstm_layer)
-	steering = Dense(1, activation='tanh')(lstm_layer)
+	acceleration = Dense(1, activation='sigmoid')(hidden)
+	brake = Dense(1, activation='sigmoid')(hidden)
+	steering = Dense(1, activation='tanh')(hidden)
 
 	output_layer = concatenate([acceleration, brake, steering])
 
@@ -30,36 +33,47 @@ def LSTM_network(path, x, y):
 	model = Model(inputs=input_layer, outputs=output_layer)
 
 	model.compile(loss='mean_squared_error', optimizer='adam')
-	model.fit(x, y, epochs=1, batch_size=32, verbose=1, validation_split=0.1)
+	model.fit(x, y, epochs=100, batch_size=32, verbose=1)
+
+	print(model.evaluate(X_train, y_train))
+	print(model.evaluate(X_test, y_test))
 
 	model.save(path)	
 	
 	return model
 
-def LSTM_network2(path, x, y):
+def Dense_network(path, x, y):
 	x = np.reshape(x, (x.shape[0], 22, 1))
+	X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+
 	model = Sequential()
-	model.add(LSTM(22, input_shape=(22,1)))
-	model.add(Dense(15, activation='relu'))
-	model.add(Dense(3))
+	model.add(Dense(22, input_shape=(22,1)))
+	model.add(Activation('relu'))
+	model.add(Dense(100))
+	model.add(Activation('relu'))
+	model.add(Dense(50))
+	model.add(Activation('relu'))
+	model.add(Flatten())
+	model.add(Dense(3, activation='sigmoid'))
+
 	model.compile(loss='mean_squared_error', optimizer='adam')
-	model.fit(x, y, epochs=5, batch_size=32, verbose=1, validation_split=0.1)
+	model.fit(X_train, y_train, epochs=100, batch_size=32, verbose=0)
+
+	print(model.evaluate(X_train, y_train))
+	print(model.evaluate(X_test, y_test))
+
 	model.save(path)	
-	return model
 
 def main():
 	path = os.getcwd()
 	data_path = os.path.join(path, 'train_data/')
-	model_path = os.path.join(path, 'torcs-server/torcs-client/lstm.h5')
-	scaler_path = os.path.join(path, 'torcs-server/torcs-client/scaler.pkl')
-	category_index_input, category_index_output, input_data, output_data = rd.read_data(data_path)
-	scaler = StandardScaler()
-	scaler.fit(input_data)
-	input_data = scaler.transform(input_data)
-	joblib.dump(scaler, scaler_path)
+	lstm_path = os.path.join(path, 'torcs-server/torcs-client/lstm.h5')
+	dense_path = os.path.join(path, 'torcs-server/torcs-client/dense.h5')
 
-	model = LSTM_network(model_path, input_data, output_data)
-	# model = LSTM_network2(model_path, input_data, output_data)
+	category_index_input, category_index_output, input_data, output_data = rd.read_data(data_path)
+
+	# LSTM_network(lstm_path, input_data, output_data)
+	Dense_network(dense_path, input_data, output_data)
 
 if __name__ == '__main__':
 	main()
