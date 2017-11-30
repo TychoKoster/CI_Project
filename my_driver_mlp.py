@@ -37,11 +37,6 @@ class MyDriverMLP(Driver):
 		brake = output[0][1]
 		steering = output[0][2]
 		
-		if acceleration > 0.5:
-			brake = 0
-		else:
-			acceleration = 0
-		
 		if acceleration > 0:
 			if carstate.rpm > 8000:
 				command.gear = carstate.gear + 1
@@ -52,10 +47,24 @@ class MyDriverMLP(Driver):
 		if not command.gear:
 			command.gear = carstate.gear or 1
 
+		if track_edges[9] < 130.0 and track_edges[9] > 80.0:
+			if speed > 40:
+				acceleration = 0
+				brake = 0.05
+		elif track_edges[9] < 60 and track_edges[9] > 40:
+			if speed > 25:
+				acceleration = 0
+				brake = 0.05
+		elif track_edges[9] < 40:
+			if speed > 15:
+				acceleration = 0
+				brake = 0.05
+
 		command.accelerator = acceleration
 		command.brake = brake 
 		command.steering = steering
 
+		print(track_edges[9])
 		print(command)
 
 		return command
