@@ -20,12 +20,10 @@ def read_data(path):
 			else:
 				output_data = np.append(output_data, dataset[:,0:3], axis=0)
 				input_data = np.append(input_data, dataset[:,3:], axis=0)
+	no_opponents = np.array([200.0] * 36)
+	input_data_opponents = []
+	for i in range(len(input_data)):
+		input_data_opponents.append(np.concatenate((input_data[i], no_opponents)))
 	# Set category indices
-	data_types = dataframe.columns
-	input_categories = data_types[3:]
-	output_categories = data_types[0:3]
-	for i, category in enumerate(input_categories):
-		category_index_input[category] = i
-	for i,category in enumerate(output_categories):
-		category_index_output[category] = i
-	return category_index_input, category_index_output, input_data, output_data
+
+	return input_data, output_data, np.array(input_data_opponents)
