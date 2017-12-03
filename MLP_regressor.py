@@ -21,11 +21,11 @@ def main():
 
 	models = []
 	for i in range(10):
-		# Best architecture for opponent data
-		MLPR = MLPRegressor(hidden_layer_sizes=(100, 20), activation='tanh', solver='lbfgs', alpha=0.0005, max_iter=2000, random_state=42)
-		
 		# Best architecture for no opponent data
-		# MLPR = MLPRegressor(hidden_layer_sizes=(220,), activation='logistic', solver='lbfgs', alpha=0.0005, max_iter=2000)
+# 		MLPR = MLPRegressor(hidden_layer_sizes=(100, 20), activation='tanh', solver='lbfgs', alpha=0.0005, max_iter=2000, random_state=42)
+		
+		# Best architecture for opponent data
+		MLPR = MLPRegressor(hidden_layer_sizes=(220,), activation='logistic', solver='lbfgs', alpha=0.0005, max_iter=2000)
 		
 		MLPR.fit(X_train, y_train)
 		print(MLPR.score(X_train, y_train))
