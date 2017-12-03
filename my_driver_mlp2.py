@@ -11,6 +11,8 @@ class MyDriverMLP(Driver):
 	def __init__(self):
 		#self.model = pickle.load(open("MLPR.p", "rb"))
 		self.alt_model = pickle.load(open("currentmodel.p", "rb"))
+		#self.alt_model = pickle.load(open("MLPR_alt.p", "rb"))
+		
 
 	# Override the `drive` method to create your own driver
 	def drive(self, carstate: State) -> Command:
@@ -22,8 +24,8 @@ class MyDriverMLP(Driver):
 		speed = math.sqrt(speed_x**2 + speed_y**2 + speed_z**2)
 		distance = carstate.distance_from_start
 		distance_raced = carstate.distance_raced
-		print("Raced")
-		print(distance_raced)
+		#print("Raced")
+		#print(distance_raced)
 		#print(distance)
 		curlaptime = carstate.current_lap_time
 		lastlaptime = carstate.last_lap_time
@@ -41,9 +43,9 @@ class MyDriverMLP(Driver):
 			input_data.append(edge)
 		input_data = np.reshape(input_data, (1,22))
 
-		# output = self.model.predict(input_data)
 		output = self.alt_model.predict(input_data)
-
+		#output = self.alt_model.activate(input_data)
+		#print(output)
 		acceleration = output[0][0]
 		brake = output[0][1]
 		steering = output[0][2]
@@ -75,28 +77,28 @@ class MyDriverMLP(Driver):
 		command.brake = brake 
 		command.steering = steering
 
-		if time > 5 and distance_raced > 10:
+		if time > 5 and distance_raced > 15 and distance > 15:
 			fitness = (distance*distance)/(time*1000.)
 		else:
 			fitness = 0
 		#print(distance)
-		print(fitness)
+		#print(fitness)
 
-		if abs(angle) >= 50:
+		if abs(angle) >= 90:
 			print("Stop") 
 			print(fitness)
 			pickle.dump(fitness, open("fitness.p","wb"))
 			pyautogui.press("esc")
 			pyautogui.press("enter")
 			exit(0)
-		elif time>5 and speed == 0:
+		elif time > 5 and speed < 2:
 			print("Stop") 
 			print(fitness)
 			pickle.dump(fitness, open("fitness.p","wb"))				
 			pyautogui.press("esc")
 			pyautogui.press("enter")
 			exit(0)
-		elif time > 15:
+		elif time > 500:
 			print("Stop")
 			print(fitness)
 			pickle.dump(fitness, open("fitness.p","wb"))
