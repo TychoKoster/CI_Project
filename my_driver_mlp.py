@@ -1,17 +1,21 @@
 from pytocl.driver import Driver
 from pytocl.car import State, Command
 
+import threading
 import pickle
 import math
 import numpy as np
+import communication as c
 
 class MyDriverMLP(Driver):
 	def __init__(self):
 		self.model = pickle.load(open("MLPR.p", "rb"))
 		self.alt_model = pickle.load(open("MLPR_alt.p", "rb"))
+		self.opponents_model = pickle.load(open("MLPR_no_opponents.p", "rb"))
 
 	# Override the `drive` method to create your own driver
 	def drive(self, carstate: State) -> Command:
+		# threading.Thread(target=c.communicate, args=(carstate, "communication.csv")).start()
 		command = Command()
 		
 		speed_x = carstate.speed_x
@@ -28,10 +32,16 @@ class MyDriverMLP(Driver):
 		input_data = [speed, track_position, angle]
 		for edge in track_edges:
 			input_data.append(edge)
-		input_data = np.reshape(input_data, (1,22))
+
+		opponents = carstate.opponents
+		for i in range(0, len(opponents), 4):
+			input_data.append(opponents[i])
+
+		input_data = np.reshape(input_data, (1,len(input_data)))
 
 		# output = self.model.predict(input_data)
-		output = self.alt_model.predict(input_data)
+		# output = self.alt_model.predict(input_data)
+		output = self.opponents_model.predict(input_data)
 
 		acceleration = output[0][0]
 		brake = output[0][1]
@@ -63,8 +73,5 @@ class MyDriverMLP(Driver):
 		command.accelerator = acceleration
 		command.brake = brake 
 		command.steering = steering
-
-		print(track_edges[9])
-		print(command)
-
+		
 		return command

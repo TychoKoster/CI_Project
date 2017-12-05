@@ -14,7 +14,7 @@ def main():
 	# Uncomment for data without added opponent data
 	# input_data, output_data, _ = rd.read_data("train_data/")
 	
-	input_data, output_data = shuffle(input_data, output_data)
+	# input_data, output_data = shuffle(input_data, output_data)
 	X_train, X_test, y_train, y_test = train_test_split(input_data, output_data, test_size=0.2)
 	
 	
