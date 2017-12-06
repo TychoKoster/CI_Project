@@ -24,9 +24,9 @@ def main():
 		# Best architecture for no opponent data
 		# MLPR = MLPRegressor(hidden_layer_sizes=(100, 20), activation='tanh', solver='lbfgs', alpha=0.0005, max_iter=2000, random_state=42)
 		
-		# Best architecture for opponent data
+		# Best architecture for 9 opponent data
 		MLPR = MLPRegressor(hidden_layer_sizes=(250, 70), activation='tanh', solver='lbfgs', alpha=0.0005, max_iter=3000, random_state=42)
-		
+
 		MLPR.fit(X_train, y_train)
 		print(MLPR.score(X_train, y_train))
 		print(MLPR.score(X_test, y_test))

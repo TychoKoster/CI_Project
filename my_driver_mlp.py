@@ -34,8 +34,9 @@ class MyDriverMLP(Driver):
 			input_data.append(edge)
 
 		opponents = carstate.opponents
-		for i in range(0, len(opponents), 4):
-			input_data.append(opponents[i])
+		for i in range(0, len(opponents), 9):
+			if not i == 27:
+				input_data.append(opponents[i])
 
 		input_data = np.reshape(input_data, (1,len(input_data)))
 
