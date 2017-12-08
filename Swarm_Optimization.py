@@ -21,7 +21,7 @@ def main():
 	for model in range(NRPOPS-1):
     		population.append(pickle.load(open("current_best_run.p", "rb")))
 		
-	newpopulation = mutate(population, 0.5, 1)
+	newpopulation = mutate(population, 1, 0.05)
 	newpopulation.append(pickle.load(open("current_best_run.p", "rb")))
 	population = deepcopy(newpopulation)
 	per_best_model = deepcopy(newpopulation)

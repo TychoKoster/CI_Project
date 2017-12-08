@@ -9,8 +9,9 @@ import pyautogui
 
 class MyDriverMLP(Driver):
 	def __init__(self):
-
-		self.alt_model = pickle.load(open("currentmodel.p",  "rb"))		
+		fi = open("Dowcurrent_best_run.p",  "rb")
+		self.alt_model = pickle.load(fi)
+		fi.close()		
 		#self.plus = 0
 
 	# Override the `drive` method to create your own driver
@@ -28,7 +29,8 @@ class MyDriverMLP(Driver):
 		#print(distance)
 		curlaptime = carstate.current_lap_time
 		lastlaptime = carstate.last_lap_time
-		time = curlaptime + lastlaptime
+		#print (lastlaptime)
+		time =  curlaptime
 		#print(lastlaptime)
 		#print(time)
 		track_position = carstate.distance_from_center
@@ -42,8 +44,8 @@ class MyDriverMLP(Driver):
 			input_data.append(edge)
 
 		opponents = carstate.opponents
-		for i in range(9, len(opponents), 9):
-			input_data.append(opponents[i])
+		#for i in range(9, len(opponents), 9):
+		#	input_data.append(opponents[i])
 
 		input_data = np.reshape(input_data, (1,len(input_data)))
 
@@ -81,13 +83,36 @@ class MyDriverMLP(Driver):
 			if speed > 15:
 				acceleration = 0
 				brake = 0.05
+		if speed > 30:
+			acceleration = 0
+			brake = 0.05
 
 		command.accelerator = acceleration
 		command.brake = brake 
 		command.steering = steering
 
 		if time > 6 and distance_raced > 80 and distance > 20:
-			fitness = (distance*distance)/(time*1000.)
+			if lastlaptime < 2:
+				fitness = (distance*distance)/(time*1000.)
+			else:
+				fitness = 200
+				print("Stop") 
+				print(fitness)
+				fi = open("fitness.p","wb")
+				pickle.dump(fitness, fi)
+				fi.close()				
+				pyautogui.press("esc")
+				pyautogui.press("down")
+				pyautogui.press("enter")
+				pyautogui.press("down")
+				pyautogui.press("enter")
+				pyautogui.press("right")
+				pyautogui.press("enter")
+				pyautogui.press("enter")
+				pyautogui.press("enter")
+				pyautogui.press("up")
+				pyautogui.press("enter")
+				exit(0)
 		else:
 			fitness = 0
 		#print(distance)
@@ -96,21 +121,28 @@ class MyDriverMLP(Driver):
 		if abs(angle) >= 80:
 			print("Stop") 
 			print(fitness)
-			pickle.dump(fitness, open("fitness.p","wb"))
+			fi = open("fitness.p","wb")
+			pickle.dump(fitness, fi)
+			fi.close()
 			pyautogui.press("esc")
 			pyautogui.press("enter")
 			exit(0)
 		elif time > 5 and speed < 2:
 			print("Stop") 
 			print(fitness)
-			pickle.dump(fitness, open("fitness.p","wb"))				
+			fi = open("fitness.p","wb")
+			pickle.dump(fitness, fi)
+			fi.close()				
 			pyautogui.press("esc")
 			pyautogui.press("enter")
 			exit(0)
 		elif time > 400:
-			print("Stop")
+			print("Stop2")
 			print(fitness)
-			pickle.dump(fitness, open("fitness.p","wb"))
+			fitness = 250
+			fi = open("fitness.p","wb")
+			pickle.dump(fitness, fi)
+			fi.close()
 			pyautogui.press("esc")
 			pyautogui.press("enter")
 			exit(0)
