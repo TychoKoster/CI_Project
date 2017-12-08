@@ -9,7 +9,7 @@ import pyautogui
 
 class MyDriverMLP(Driver):
 	def __init__(self):
-		fi = open("currentmodel.p",  "rb")
+		fi = open("latecurrent_best_run.p",  "rb")
 		self.alt_model = pickle.load(fi)
 		fi.close()		
 
