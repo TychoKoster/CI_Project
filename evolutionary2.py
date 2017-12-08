@@ -19,7 +19,6 @@ def main():
 		fi = open('current_best_run.p', 'rb')
 		population.append(pickle.load(fi))
 		fi.close()
-		#population.append(pickle.load(open("MLPR_no_opponents.p", "rb")))
 		
 	newpopulation = mutate(population, 1, 0.05)
 	newpopulation1 = deepcopy(newpopulation)
@@ -112,7 +111,7 @@ def test(population, maxfit):
 	for i, model in enumerate(population):
 		print('Model run', i)
 
-		# Two runs to prevent stochasticity
+		# Three runs to prevent stochasticity
 		fi = open("currentmodel.p","wb")
 		pickle.dump(model, fi)	
 		fi.close()
@@ -121,14 +120,15 @@ def test(population, maxfit):
 		fit1 = pickle.load(fi)
 		fi.close()
 		fitness[i]= (fit1+fit2+fit3)
+		
+		pickle.dump(model, open("currentmodel.p","wb"))	
+		os.system("./loop.py")
+		fit2 = pickle.load(open("fitness.p", "rb"))
+		pickle.dump(model, open("currentmodel.p","wb"))	
+		os.system("./loop.py")
+		fit3 = pickle.load(open("fitness.p", "rb"))
 		if fitness[i] > 199:
 			break
-		#pickle.dump(model, open("currentmodel.p","wb"))	
-		#os.system("./loop.py")
-		#fit2 = pickle.load(open("fitness.p", "rb"))
-		#pickle.dump(model, open("currentmodel.p","wb"))	
-		#os.system("./loop.py")
-		#fit3 = pickle.load(open("fitness.p", "rb"))
 	print(fitness)
 	maxfitness = np.amax(fitness)
 	if maxfitness > maxfit:
@@ -152,22 +152,6 @@ def mutate(pop, rate, div):
 
 	return pop
 
-def mutate_weight(layer, node, node_index):
-	# # Swap sign
-	# layer[j] = -weight
-
-	# # Percentage
-	# layer[j] = 0.5*weight
-
-	# Swap weight
-	indices = list(range(0, len(layer)))
-	indices.remove(node_index)
-	random_index = random.choice(indices)
-	other_weight = layer[random_index]
-	layer[random_index] = node
-	layer[node_index] = other_weight
-
-	return layer
 
 def crossover(gen1,gen2):
 	# Create next generation out of best two genotypes
