@@ -13,18 +13,22 @@ def main():
 	nrpops = 16
 	maxfit = 0
 	population = []
+	newpopulation1 = []
 	evolved_max_fitness = []
+	
 	evolved_fitness = []
 	for model in range(nrpops-1):
 		fi = open('current_best_run.p', 'rb')
 		population.append(pickle.load(fi))
 		fi.close()
-		
-	newpopulation = mutate(population, 1, 0.05)
-	newpopulation1 = deepcopy(newpopulation)
+
+	# First one is not mutated	
+	newpopulation = mutate(population, 1, 0.01)
 	fi = open('current_best_run.p', 'rb')
 	newpopulation1.append(pickle.load(fi))
 	fi.close()
+	for model in range(len(newpopulation)):
+		newpopulation1.append(newpopulation[model])
 	population = deepcopy(newpopulation1)
 	generations = 100
 	
@@ -43,7 +47,7 @@ def main():
 		pickle.dump(evolved_fitness, fi)
 		fi.close()
 
-		# Select best genotypes.
+		# Tournament selection for selecting best genotypes.
 		ind = []
 		ind = np.argsort(fitness)
 		print(ind[-1])
@@ -55,6 +59,9 @@ def main():
 			bestrun = deepcopy(bestpop)
 			secondrun = deepcopy(secondbest)
 			thirdrun = deepcopy(thirdbest)
+			fit1 = fitness[ind[-1]]
+			fit2 = fitness[ind[-2]]
+			fit3 = fitness[ind[-3]]
 			fi = open("current_best_run.p","wb")
 			pickle.dump(bestpop, fi)
 			fi.close()
@@ -69,6 +76,8 @@ def main():
 			thirdbest = deepcopy(population[ind[-2]])
 			secondrun = deepcopy(secondbest)
 			thirdrun = deepcopy(thirdbest)
+			fit2 = fitness[ind[-1]]
+			fit3 = fitness[ind[-2]]
 			fi = open("current_secondbest_run.p","wb")
 			pickle.dump(secondbest, fi)
 			fi.close()
@@ -76,24 +85,33 @@ def main():
 			pickle.dump(thirdbest, fi)
 			fi.close()
 	
-		# Make new population out of nr. 1, 2 and 3.		
+		# Make new population out of nr. 1, 2 and 3.	
 		population = []
 		population.append(thirdbest)
-		for model in range(7):
-			fi = open("current_best_run.p","rb")
-			population.append(pickle.load(fi))
-			fi.close()
-		for model in range(4):
-			fi = open("current_secondbest_run.p", "rb")
-			population.append(pickle.load(fi))
-			fi.close()
+		fit_total = fit1 + fit2 + fit3
+		for model in range(11):
+			# Fitness Propotional
+			
+			portion = random.uniform(0,1)
+			if portion < (fit1/fit_total):
+				fi = open("current_best_run.p","rb")
+				population.append(pickle.load(fi))
+				fi.close()
+			elif portion < (fit1+fit2)/(fit_total):
+				fi = open("current_secondbest_run.p", "rb")
+				population.append(pickle.load(fi))
+				fi.close()
+			else:
+				fi = open("current_thirdbest_run.p", "rb")
+				population.append(pickle.load(fi))
+				fi.close()
 		
 		# Mutation, rate of mutations is declining with generations.
-		newpop = mutate(population, 0.01*float(generations/(times+1)), 0.005*float(generations/(times+1)))
+		newpop = mutate(population, 0.01*float(generations/(times+1)), 0.0001*float(generations/(times+1)))
 		newpop1 = deepcopy(newpop)
 		
 
-		# Breeding of kids, from best 2 genotypes
+		# Crossover: Breeding of kids, from best 2 genotypes
 		kid1, kid2, kid3, kid4 = crossover(bestrun, secondrun)
 		newpop1.append(kid1)
 		newpop1.append(kid2)
@@ -121,12 +139,12 @@ def test(population, maxfit):
 		fi.close()
 		fitness[i]= (fit1+fit2+fit3)
 		
-		pickle.dump(model, open("currentmodel.p","wb"))	
-		os.system("./loop.py")
-		fit2 = pickle.load(open("fitness.p", "rb"))
-		pickle.dump(model, open("currentmodel.p","wb"))	
-		os.system("./loop.py")
-		fit3 = pickle.load(open("fitness.p", "rb"))
+		#pickle.dump(model, open("currentmodel.p","wb"))	
+		#os.system("./loop.py")
+		#fit2 = pickle.load(open("fitness.p", "rb"))
+		#pickle.dump(model, open("currentmodel.p","wb"))	
+		#os.system("./loop.py")
+		#fit3 = pickle.load(open("fitness.p", "rb"))
 		if fitness[i] > 199:
 			break
 	print(fitness)
