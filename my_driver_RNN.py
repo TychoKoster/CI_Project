@@ -11,6 +11,7 @@ class MyDriver(Driver):
 		self.model = load_model('lstm.h5')
 		self.lstm_model = load_model('lstm_50_epochs.h5')
 		self.dense_model = load_model('dense.h5')
+		self.data_logger = None
 
 	# Override the `drive` method to create your own driver
 	def drive(self, carstate: State) -> Command:
