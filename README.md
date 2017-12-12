@@ -31,7 +31,7 @@ This project is part of the Computational Intelligence course of the MSc Ai. In 
 
 ***my_driver_mlp.py*** the driver file of the MLPRegressor model with finetuning.
 
-***my_driver.py*** the driver file of the MLPRegressor model without finetuning.
+***my_driver_RNN.py*** the driver file of the Deep Neural net model.
 
 ***read_data.py*** reads in the training and test data.
 
